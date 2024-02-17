@@ -1,6 +1,6 @@
 # Install PySpark with Apache Sedona on M Chip Mac
 
-This guide will help you install Apache Sedona (version 1.5.1) with PySpark (version 3.4.1) and PyArrow (version 12.0.1) on your M Chip Mac. Please follow the steps below in your command line interface (CLI), not in a Jupyter Notebook, for a smoother installation process and more informative error messages.
+This guide will help you install Apache Sedona (version 1.5.1) with PySpark (version 3.5.0) and PyArrow (version 15.0.0) on your M Chip Mac. Please follow the steps below in your command line interface (CLI), not in a Jupyter Notebook, for a smoother installation process and more informative error messages.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ Follow the installation guide from the official PySpark documentation: [Getting 
 Run the following command to install PySpark and PyArrow:
 
 ```bash
-pip install pyspark==3.4.1 pyarrow==12.0.1 apache-sedona==1.5.1
+pip install pyspark==3.5.0 pyarrow==15.0.0 apache-sedona==1.5.1
 ```
 
 You can choose to install PySpark either in the base/root environment or within a specific Conda environment. Be aware that the most common issue during installation is PySpark not finding Java or finding an incompatible Java version.
@@ -35,13 +35,22 @@ pyspark
 If PySpark starts without issues, proceed to test Apache Sedona in a Jupyter Notebook:
 
 ```python
-from sedona.spark import *
-config = SedonaContext.builder(). \
-    config('spark.jars.packages',
-           'org.apache.sedona:sedona-spark-3.0_2.12:1.5.1,'
-           'org.datasyslab:geotools-wrapper:1.5.1-28.2'). \
-    config('spark.jars.repositories', 'https://artifacts.unidata.ucar.edu/repository/unidata-all'). \
-    getOrCreate()
+# Import SedonaContext from sedona.spark
+from sedona.spark import SedonaContext
+
+# Initialize a SedonaContext with specific configurations
+config = SedonaContext.builder()\
+    .config('spark.jars.packages',
+            # Add Sedona and GeoTools libraries as dependencies
+            'org.apache.sedona:sedona-spark-3.0_2.12:1.5.1,'
+            'org.datasyslab:geotools-wrapper:1.5.1-28.2')\
+    .config("spark.sql.repl.eagerEval.enabled", True)  # Enable eager evaluation for Spark SQL
+    .config("spark.sql.execution.arrow.pyspark.enabled", True)  # Enable Arrow-based columnar data transfers (make it looks nicer!)
+    # Add an external repository for additional Spark JARs
+    .config('spark.jars.repositories', 'https://artifacts.unidata.ucar.edu/repository/unidata-all')\
+    .getOrCreate()  # Create or get the existing Spark Context
+
+# Create a SedonaContext based on the configured Spark Context
 sedona = SedonaContext.create(config)
 ```
 
